@@ -9,6 +9,6 @@ public class TodoContext(DbContextOptions<TodoContext> options) : DbContext(opti
 
 public class CreateTodoItemDto
 {
-  public string Name { get; set; }
+  public required string Name { get; set; }
   public bool IsComplete { get; set; }
 }
