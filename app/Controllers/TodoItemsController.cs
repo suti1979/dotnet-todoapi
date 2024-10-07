@@ -14,7 +14,10 @@ namespace TodoApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
         {
-            return await _context.TodoItems.ToListAsync();
+            return await _context
+                .TodoItems
+                // .Include(t => t.Stuffs)
+                .ToListAsync();
         }
 
         // GET: api/TodoItems/5
@@ -75,7 +78,7 @@ namespace TodoApi.Controllers
             _context.TodoItems.Add(todoItem);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetTodoItem), new { id = todoItem.Id }, todoItem);
+            return CreatedAtAction(nameof(GetTodoItem), todoItem);
         }
 
         // DELETE: api/TodoItems/5

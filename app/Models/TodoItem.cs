@@ -7,4 +7,6 @@ public class TodoItem
   public DateTime UpdatedAt { get; set; } = DateTime.Now;
   public string? Name { get; set; }
   public bool IsComplete { get; set; }
+
+  public ICollection<Stuff> Stuffs { get; set; } = new List<Stuff>();
 }

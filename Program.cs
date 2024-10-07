@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Models;
 
@@ -13,7 +14,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers();
+// builder.Services.AddControllers().AddJsonOptions(o =>
+// {
+//     o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+// });
 
 builder.Services.AddDbContext<TodoContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("TodoDatabase")));
