@@ -14,10 +14,12 @@ builder.Services.AddCors(options =>
     });
 });
 
-// builder.Services.AddControllers().AddJsonOptions(o =>
-// {
-//     o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-// });
+builder.Services.AddControllers().AddJsonOptions(o =>
+{
+    o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
+
+builder.Services.AddControllers();
 
 builder.Services.AddDbContext<TodoContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("TodoDatabase")));
