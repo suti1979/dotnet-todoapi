@@ -1,4 +1,5 @@
-using TodoApi.Models;
+namespace TodoApi.app.Models;
+
 public class Stuff
 {
   public Guid Id { get; set; } = Guid.NewGuid();

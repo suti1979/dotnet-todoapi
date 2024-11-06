@@ -1,30 +1,29 @@
+using Dumpify;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TodoApi.Models;
+using TodoApi.app.Data;
+using TodoApi.app.Interfaces;
+using TodoApi.app.Models;
 
-namespace TodoApi.Controllers
+namespace TodoApi.app.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TodoItemsController(TodoContext context) : ControllerBase
+    public class TodoItemsController(TodoContext context, IChatService chatService) : ControllerBase
     {
-        private readonly TodoContext _context = context;
-
-        // GET: api/TodoItems
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
         {
-            return await _context
+            return await context
                 .TodoItems
                 .Include(t => t.Stuffs)
                 .ToListAsync();
         }
-
-        // GET: api/TodoItems/5
-        [HttpGet("{id}")]
+        
+        [HttpGet("{id:guid}")]
         public async Task<ActionResult<TodoItem>> GetTodoItem(Guid id)
         {
-            var todoItem = await _context.TodoItems
+            var todoItem = await context.TodoItems
             .Include(t => t.Stuffs).FirstOrDefaultAsync(t => t.Id == id);
 
             if (todoItem == null)
@@ -34,22 +33,24 @@ namespace TodoApi.Controllers
 
             return todoItem;
         }
-
-        // PUT: api/TodoItems/5
+        
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        [HttpPut("{id:guid}")]
         public async Task<IActionResult> PutTodoItem(Guid id, TodoItem todoItem)
         {
+            todoItem.Dump();
+            
             if (id != todoItem.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(todoItem).State = EntityState.Modified;
+            context.Entry(todoItem).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
+                await chatService.Refresh("COURIER-" + Guid.NewGuid());
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -63,44 +64,50 @@ namespace TodoApi.Controllers
                 }
             }
 
+            // return  CreatedAtAction(nameof(GetTodoItem), todoItem);
             return NoContent();
         }
-
-        // POST: api/TodoItems
+        
         [HttpPost]
         public async Task<ActionResult<TodoItem>> PostTodoItem(CreateTodoItemDto createTodoItemDto)
         {
             var todoItem = new TodoItem
             {
+                Id = Guid.NewGuid(),
                 Name = createTodoItemDto.Name,
-                IsComplete = createTodoItemDto.IsComplete
+                IsComplete = createTodoItemDto.IsComplete,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+                
             };
 
-            _context.TodoItems.Add(todoItem);
-            await _context.SaveChangesAsync();
+            context.TodoItems.Add(todoItem);
+            await context.SaveChangesAsync();
+            await chatService.Refresh("COURIER-" + Guid.NewGuid());
+  
 
             return CreatedAtAction(nameof(GetTodoItem), todoItem);
         }
-
-        // DELETE: api/TodoItems/5
-        [HttpDelete("{id}")]
+        
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteTodoItem(Guid id)
         {
-            var todoItem = await _context.TodoItems.FindAsync(id);
+            var todoItem = await context.TodoItems.FindAsync(id);
             if (todoItem == null)
             {
                 return NotFound();
             }
 
-            _context.TodoItems.Remove(todoItem);
-            await _context.SaveChangesAsync();
+            context.TodoItems.Remove(todoItem);
+            await context.SaveChangesAsync();
+            await chatService.Refresh("COURIER-" + Guid.NewGuid());
 
             return NoContent();
         }
 
         private bool TodoItemExists(Guid id)
         {
-            return _context.TodoItems.Any(e => e.Id == id);
+            return context.TodoItems.Any(e => e.Id == id);
         }
     }
 }
