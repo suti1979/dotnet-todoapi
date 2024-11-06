@@ -104,6 +104,13 @@ namespace TodoApi.app.Controllers
 
             return NoContent();
         }
+        
+        [HttpGet("/stuff")]
+        public Guid GetStuffs()
+        {
+            return Guid.NewGuid();
+        }
+        
 
         private bool TodoItemExists(Guid id)
         {
