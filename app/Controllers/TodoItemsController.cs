@@ -111,6 +111,13 @@ namespace TodoApi.app.Controllers
             return Guid.NewGuid();
         }
         
+        [HttpPost("/stuff/{id:guid}")]
+        public async Task<Guid> GetStuffs(Guid id)
+        {
+            await chatService.Refresh("STUFF-" + Guid.NewGuid());
+            return id;
+        }
+        
 
         private bool TodoItemExists(Guid id)
         {
