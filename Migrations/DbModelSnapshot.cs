@@ -10,8 +10,8 @@ using TodoApi.app.Data;
 
 namespace TodoApi.Migrations
 {
-    [DbContext(typeof(TodoContext))]
-    partial class TodoContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(Db))]
+    partial class DbModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -22,7 +22,7 @@ namespace TodoApi.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Stuff", b =>
+            modelBuilder.Entity("TodoApi.app.Models.Stuff", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -42,7 +42,28 @@ namespace TodoApi.Migrations
                     b.ToTable("Stuffs");
                 });
 
-            modelBuilder.Entity("TodoApi.Models.TodoItem", b =>
+            modelBuilder.Entity("TodoApi.app.Models.Suti", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(42)
+                        .HasColumnType("character varying(42)");
+
+                    b.Property<Guid>("TodoItemId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TodoItemId");
+
+                    b.ToTable("Suties");
+                });
+
+            modelBuilder.Entity("TodoApi.app.Models.TodoItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -55,7 +76,9 @@ namespace TodoApi.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -65,10 +88,10 @@ namespace TodoApi.Migrations
                     b.ToTable("TodoItems");
                 });
 
-            modelBuilder.Entity("Stuff", b =>
+            modelBuilder.Entity("TodoApi.app.Models.Stuff", b =>
                 {
-                    b.HasOne("TodoApi.Models.TodoItem", "TodoItem")
-                        .WithMany("Stuffs")
+                    b.HasOne("TodoApi.app.Models.TodoItem", "TodoItem")
+                        .WithMany()
                         .HasForeignKey("TodoItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -76,9 +99,20 @@ namespace TodoApi.Migrations
                     b.Navigation("TodoItem");
                 });
 
-            modelBuilder.Entity("TodoApi.Models.TodoItem", b =>
+            modelBuilder.Entity("TodoApi.app.Models.Suti", b =>
                 {
-                    b.Navigation("Stuffs");
+                    b.HasOne("TodoApi.app.Models.TodoItem", "TodoItem")
+                        .WithMany("Suties")
+                        .HasForeignKey("TodoItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TodoItem");
+                });
+
+            modelBuilder.Entity("TodoApi.app.Models.TodoItem", b =>
+                {
+                    b.Navigation("Suties");
                 });
 #pragma warning restore 612, 618
         }

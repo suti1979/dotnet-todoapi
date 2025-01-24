@@ -9,22 +9,22 @@ namespace TodoApi.app.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TodoItemsController(TodoContext context, IChatService chatService) : ControllerBase
+    public class TodoItemsController(Db db, IChatService chatService) : ControllerBase
     {
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
         {
-            return await context
+            return await db
                 .TodoItems
-                .Include(t => t.Stuffs)
+                .Include(t => t.Suties)
                 .ToListAsync();
         }
         
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<TodoItem>> GetTodoItem(Guid id)
         {
-            var todoItem = await context.TodoItems
-            .Include(t => t.Stuffs).FirstOrDefaultAsync(t => t.Id == id);
+            var todoItem = await db.TodoItems
+            .Include(t => t.Suties).FirstOrDefaultAsync(t => t.Id == id);
 
             if (todoItem == null)
             {
@@ -45,11 +45,11 @@ namespace TodoApi.app.Controllers
                 return BadRequest();
             }
 
-            context.Entry(todoItem).State = EntityState.Modified;
+            db.Entry(todoItem).State = EntityState.Modified;
 
             try
             {
-                await context.SaveChangesAsync();
+                await db.SaveChangesAsync();
                 await chatService.Refresh("COURIER-" + Guid.NewGuid());
             }
             catch (DbUpdateConcurrencyException)
@@ -77,41 +77,61 @@ namespace TodoApi.app.Controllers
                 Name = createTodoItemDto.Name,
                 IsComplete = createTodoItemDto.IsComplete,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-                
+                UpdatedAt = DateTime.UtcNow,
+                Suties =
+                [
+                    new Suti
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = createTodoItemDto.Name,
+
+                    }
+                ]
             };
 
-            context.TodoItems.Add(todoItem);
-            await context.SaveChangesAsync();
+            db.TodoItems.Add(todoItem);
+            await db.SaveChangesAsync();
             await chatService.Refresh("COURIER-" + Guid.NewGuid());
   
 
-            return CreatedAtAction(nameof(GetTodoItem), todoItem);
+            // Fix: Add route values containing the id
+            return CreatedAtAction(
+                nameof(GetTodoItem), 
+                new { id = todoItem.Id }, // Add route values
+                todoItem                  // Response body
+            );
         }
         
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteTodoItem(Guid id)
         {
-            var todoItem = await context.TodoItems.FindAsync(id);
+            var todoItem = await db.TodoItems.FindAsync(id);
             if (todoItem == null)
             {
                 return NotFound();
             }
 
-            context.TodoItems.Remove(todoItem);
-            await context.SaveChangesAsync();
+            db.TodoItems.Remove(todoItem);
+            await db.SaveChangesAsync();
             await chatService.Refresh("COURIER-" + Guid.NewGuid());
 
             return NoContent();
         }
         
-        [HttpGet("/stuff")]
+        [HttpGet("suties")]
+        public async Task<ActionResult<IEnumerable<Suti>>> GetSutiItems()
+        {
+           // get items has Suti
+            return await db.Suties.ToListAsync();
+        }
+        
+        [HttpGet("stuff")]
         public Guid GetStuffs()
         {
             return Guid.NewGuid();
         }
         
-        [HttpPost("/stuff/{id:guid}")]
+        [HttpPost("stuff/{id:guid}")]
         public async Task<Guid> GetStuffs(Guid id)
         {
             await chatService.Refresh("STUFF-" + Guid.NewGuid());
@@ -121,7 +141,7 @@ namespace TodoApi.app.Controllers
 
         private bool TodoItemExists(Guid id)
         {
-            return context.TodoItems.Any(e => e.Id == id);
+            return db.TodoItems.Any(e => e.Id == id);
         }
     }
 }

@@ -9,9 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins", builder =>
+    options.AddPolicy("AllowAllOrigins", opt =>
     {
-        builder.AllowAnyOrigin()
+        opt.AllowAnyOrigin()
                .AllowAnyMethod()
                .AllowAnyHeader();
     });
@@ -24,7 +24,7 @@ builder.Services.AddControllers().AddJsonOptions(o =>
 
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<TodoContext>(opt =>
+builder.Services.AddDbContext<Db>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("TodoDatabase")));
 
 builder.Services.AddEndpointsApiExplorer();

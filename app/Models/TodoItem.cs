@@ -1,12 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace TodoApi.app.Models;
 
 public class TodoItem
 {
-  public Guid Id { get; set; } = Guid.NewGuid();
-  public DateTime CreatedAt { get; set; } = DateTime.Now;
-  public DateTime UpdatedAt { get; set; } = DateTime.Now;
-  public string? Name { get; set; }
-  public bool IsComplete { get; set; }
-
-  public ICollection<Stuff> Stuffs { get; set; } = new List<Stuff>();
+  public Guid Id { get; init; } = Guid.NewGuid();
+  public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+  public DateTime UpdatedAt { get; init; } = DateTime.UtcNow;
+  [StringLength(50)]
+  public required string Name { get; init; }
+  public bool IsComplete { get; init; }
+  
+  public ICollection<Suti> Suties { get; init; }
+  
 }
